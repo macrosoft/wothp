@@ -1,7 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import BigWorld
+import cPickle
 import GUI
+from ClientArena import ClientArena
 from gui import g_guiResetters
 from gui.Scaleform.Battle import Battle
 from debug_utils import *
@@ -51,9 +53,6 @@ class Wothp(object):
         self.playerTeam = BigWorld.player().team
         self.hpDict = {}
 
-    def insertVehicle(self, vid, health):
-        self.hpDict[vid] = health
-
     def update(self):
         if self.window is None:
             return
@@ -67,6 +66,14 @@ class Wothp(object):
             else:
                 totalEnemy += self.hpDict[key]
         self.label.text = str(totalAlly) + ' / ' + str(totalEnemy)
+
+    def insertVehicle(self, vid, health):
+        self.hpDict[vid] = health
+
+    def updateVehicle(self, vid, health):
+        if self.hpDict.get(vid, -1) > health:
+            self.hpDict[vid] = health
+            self.update()
 
 old_Battle_afterCreate = Battle.afterCreate
 
@@ -91,3 +98,13 @@ def new_beforeDelete(self):
     wothp.deleteLabel()
 
 Battle.beforeDelete = new_beforeDelete
+
+old_ClientArena_onVehicleKilled = ClientArena._ClientArena__onVehicleKilled
+
+def new_ClientArena__onVehicleKilled(self, argStr):
+    old_ClientArena_onVehicleKilled(self, argStr)
+    victimID, killerID, reason = cPickle.loads(argStr)
+    wothp = Wothp()
+    wothp.updateVehicle(victimID, 0)
+
+ClientArena._ClientArena__onVehicleKilled = new_ClientArena__onVehicleKilled
