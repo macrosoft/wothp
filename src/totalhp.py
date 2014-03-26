@@ -10,6 +10,8 @@ class Wothp(object):
     obj = None
     window = None
     label = None
+    hpDict = {}
+    playerTeam = 0
 
     def __init__(self):
         g_guiResetters.add(self.onChangeScreenResolution)
@@ -32,7 +34,7 @@ class Wothp(object):
         self.window.heightMode = 'PIXEL'
         self.window.widthMode = 'PIXEL'
         GUI.addRoot(self.window)
-        self.label = GUI.Text("12345 / 67890")
+        self.label = GUI.Text("- / -")
         self.label.font = 'Courier New_15.dds'
         self.label.colour = (255.0, 255.0, 255.0, 255.0)
         self.label.materialFX = 'ADD'
@@ -45,12 +47,39 @@ class Wothp(object):
         GUI.delRoot(self.window)
         self.window = None
 
+    def reset(self):
+        self.playerTeam = BigWorld.player().team
+        self.hpDict = {}
+
+    def insertVehicle(self, vid, health):
+        self.hpDict[vid] = health
+
+    def update(self):
+        if self.window is None:
+            return
+        totalAlly = 0
+        totalEnemy = 0
+        vehicles = BigWorld.player().arena.vehicles
+        for key in self.hpDict:
+            vehicle = vehicles.get(key)
+            if vehicle['team'] == self.playerTeam:
+                totalAlly += self.hpDict[key]
+            else:
+                totalEnemy += self.hpDict[key]
+        self.label.text = str(totalAlly) + ' / ' + str(totalEnemy)
+
 old_Battle_afterCreate = Battle.afterCreate
 
 def new_Battle_afterCreate(self):
     old_Battle_afterCreate(self)
     wothp = Wothp()
+    wothp.reset()
     wothp.createLabel()
+    vehicles = BigWorld.player().arena.vehicles
+    for key in self._Battle__vehicles.keys():
+        vehicle = vehicles.get(key)
+        wothp.insertVehicle(key, vehicle['vehicleType'].maxHealth)
+    wothp.update()
 
 Battle.afterCreate = new_Battle_afterCreate
 
