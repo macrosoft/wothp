@@ -2,28 +2,35 @@
 # -*- coding: utf-8 -*-
 import BigWorld
 import GUI
+from gui import g_guiResetters
 from gui.Scaleform.Battle import Battle
 from debug_utils import *
 
 class Wothp(object):
     obj = None
+    window = None
+    label = None
 
     def __init__(self):
-        self.window = None
-        self.label = None
+        g_guiResetters.add(self.onChangeScreenResolution)
 
     def __new__(self, *dt, **mp):
         if self.obj is None:
             self.obj = object.__new__(self, *dt, **mp)
         return self.obj
 
-    def createLabel(self):
-        self.window = GUI.Window('')
+    def onChangeScreenResolution(self):
+        if self.window is None:
+            return
         sr = GUI.screenResolution()
-        self.window.heightMode = 'PIXEL'
-        self.window.widthMode = 'PIXEL'
         self.window.width = sr[0]
         self.window.height = sr[1]
+        self.label.position = (sr[0]/2, 45, 1)
+
+    def createLabel(self):
+        self.window = GUI.Window('')
+        self.window.heightMode = 'PIXEL'
+        self.window.widthMode = 'PIXEL'
         GUI.addRoot(self.window)
         self.label = GUI.Text("12345 / 67890")
         self.label.font = 'Courier New_15.dds'
@@ -32,7 +39,7 @@ class Wothp(object):
         self.window.addChild(self.label)
         self.label.horizontalPositionMode = 'PIXEL'
         self.label.verticalPositionMode = 'PIXEL'
-        self.label.position = (sr[0]/2, 45, 1)
+        self.onChangeScreenResolution()
 
     def deleteLabel(self):
         GUI.delRoot(self.window)
