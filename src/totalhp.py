@@ -29,7 +29,7 @@ class Wothp(object):
         sr = GUI.screenResolution()
         self.window.width = sr[0]
         self.window.height = sr[1]
-        self.label.position = (sr[0]/2, 45, 1)
+        self.label.position = (sr[0]/2 + 2, 45, 1)
 
     def createLabel(self):
         self.window = GUI.Window('')
@@ -65,7 +65,12 @@ class Wothp(object):
                 totalAlly += self.hpDict[key]
             else:
                 totalEnemy += self.hpDict[key]
-        self.label.text = str(totalAlly) + ' / ' + str(totalEnemy)
+        delimiter = ':'
+        if totalAlly > totalEnemy:
+            delimiter = '>'
+        elif totalAlly < totalEnemy:
+            delimiter = '<'
+        self.label.text = "{:>6} {:1} {:<6}".format(totalAlly, delimiter, totalEnemy)
 
     def insertVehicle(self, vid, health):
         self.hpDict[vid] = health
