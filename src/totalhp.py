@@ -5,7 +5,8 @@ import cPickle
 import GUI
 from ClientArena import ClientArena
 from gui import g_guiResetters
-from gui.Scaleform.Battle import Battle
+from gui.Scaleform.Battle import Battle, VehicleMarkersManager
+from Vehicle import Vehicle
 from debug_utils import *
 
 class Wothp(object):
@@ -113,3 +114,27 @@ def new_ClientArena__onVehicleKilled(self, argStr):
     wothp.updateVehicle(victimID, 0)
 
 ClientArena._ClientArena__onVehicleKilled = new_ClientArena__onVehicleKilled
+
+old_createMarker = VehicleMarkersManager.createMarker
+
+def new_createMarker(self, vProxy):
+    old_createMarker(self, vProxy)
+    wothp = Wothp()
+    wothp.updateVehicle(vProxy.id, vProxy.health)
+
+VehicleMarkersManager.createMarker = new_createMarker
+
+old_Vehicle_onHealthChanged = Vehicle.onHealthChanged
+
+def new_Vehicle_onHealthChanged(self, newHealth, attackerID, attackReasonID):
+    if newHealth > 0 and self.health <= 0:
+        return None
+    elif not self.isStarted:
+        return None
+    else:
+        old_Vehicle_onHealthChanged(self, newHealth, attackerID, attackReasonID)
+        wothp = Wothp()
+        wothp.updateVehicle(self.id, newHealth)
+        return None
+
+Vehicle.onHealthChanged = new_Vehicle_onHealthChanged
