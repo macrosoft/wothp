@@ -118,9 +118,10 @@ ClientArena._ClientArena__onVehicleKilled = new_ClientArena__onVehicleKilled
 old_createMarker = VehicleMarkersManager.createMarker
 
 def new_createMarker(self, vProxy):
-    old_createMarker(self, vProxy)
+    result = old_createMarker(self, vProxy)
     wothp = Wothp()
     wothp.updateVehicle(vProxy.id, vProxy.health)
+    return  result
 
 VehicleMarkersManager.createMarker = new_createMarker
 
