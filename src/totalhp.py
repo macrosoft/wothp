@@ -78,7 +78,7 @@ class Wothp(object):
 
     def updateVehicle(self, vid, health):
         if self.hpDict.get(vid, -1) > health:
-            self.hpDict[vid] = health
+            self.hpDict[vid] = max(health, 0)
             self.update()
 
 old_Battle_afterCreate = Battle.afterCreate
