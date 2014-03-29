@@ -3,6 +3,7 @@
 import BigWorld
 import cPickle
 import GUI
+from Avatar import PlayerAvatar
 from ClientArena import ClientArena
 from gui import g_guiResetters
 from gui.Scaleform.Battle import Battle, VehicleMarkersManager
@@ -80,6 +81,18 @@ class Wothp(object):
         if self.hpDict.get(vid, -1) > health:
             self.hpDict[vid] = max(health, 0)
             self.update()
+
+    def setVisible(self, flag):
+        self.label.visible = flag
+
+old_PlayerAvatar_setVisibleGUI = PlayerAvatar._PlayerAvatar__setVisibleGUI
+
+def new_PlayerAvatar_setVisibleGUI(self, bool):
+    old_PlayerAvatar_setVisibleGUI(self, bool)
+    wothp = Wothp()
+    wothp.setVisible(bool)
+
+PlayerAvatar._PlayerAvatar__setVisibleGUI = new_PlayerAvatar_setVisibleGUI
 
 old_Battle_afterCreate = Battle.afterCreate
 
