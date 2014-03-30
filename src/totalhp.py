@@ -107,6 +107,7 @@ class Wothp(object):
             self.update()
 
     def setVisible(self, flag):
+        self.shadow.visible = flag
         self.label.visible = flag
 
 old_PlayerAvatar_setVisibleGUI = PlayerAvatar._PlayerAvatar__setVisibleGUI
