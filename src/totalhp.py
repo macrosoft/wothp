@@ -13,6 +13,7 @@ from debug_utils import *
 class Wothp(object):
     obj = None
     window = None
+    shadow = None
     label = None
     hpDict = {}
     playerTeam = 0
@@ -31,6 +32,7 @@ class Wothp(object):
         sr = GUI.screenResolution()
         self.window.width = sr[0]
         self.window.height = sr[1]
+        self.shadow.position = (sr[0]/2 + 3, 46, 1)
         self.label.position = (sr[0]/2 + 2, 45, 1)
 
     def createLabel(self):
@@ -38,10 +40,15 @@ class Wothp(object):
         self.window.heightMode = 'PIXEL'
         self.window.widthMode = 'PIXEL'
         GUI.addRoot(self.window)
+        self.shadow = GUI.Text("- / -")
+        self.shadow.font = 'Courier New_15.dds'
+        self.shadow.colour = (0.0, 0.0, 0.0, 255.0)
+        self.window.addChild(self.shadow)
+        self.shadow.horizontalPositionMode = 'PIXEL'
+        self.shadow.verticalPositionMode = 'PIXEL'
         self.label = GUI.Text("- / -")
         self.label.font = 'Courier New_15.dds'
         self.label.colour = (255.0, 255.0, 255.0, 255.0)
-        self.label.materialFX = 'ADD'
         self.window.addChild(self.label)
         self.label.horizontalPositionMode = 'PIXEL'
         self.label.verticalPositionMode = 'PIXEL'
@@ -72,7 +79,9 @@ class Wothp(object):
             delimiter = '>'
         elif totalAlly < totalEnemy:
             delimiter = '<'
-        self.label.text = "{:>6} {:1} {:<6}".format(totalAlly, delimiter, totalEnemy)
+        text = "{:>6} {:1} {:<6}".format(totalAlly, delimiter, totalEnemy)
+        self.shadow.text = text
+        self.label.text = text
 
     def insertVehicle(self, vid, health):
         self.hpDict[vid] = health
