@@ -3,10 +3,13 @@
 import BigWorld
 import cPickle
 import GUI
+import json
+import os
 from Avatar import PlayerAvatar
 from ClientArena import ClientArena
 from gui import g_guiResetters
 from gui.Scaleform.Battle import Battle, VehicleMarkersManager
+from xml.dom import minidom
 from Vehicle import Vehicle
 from debug_utils import *
 
@@ -15,11 +18,21 @@ class Wothp(object):
     window = None
     shadow = None
     label = None
+    config = {}
     hpDict = {}
     playerTeam = 0
 
     def __init__(self):
         g_guiResetters.add(self.onChangeScreenResolution)
+        path_items = minidom.parse(os.path.join(os.getcwd(), 'paths.xml')).getElementsByTagName('Path')
+        for root in path_items:
+            path = os.path.join(os.getcwd(), root.childNodes[0].data)
+            if os.path.isdir(path):
+                conf_file = os.path.join(path, 'scripts', 'client', 'mods', 'totalhp.json')
+                if os.path.isfile(conf_file):
+                    with open(conf_file) as data_file:
+                        self.config = json.load(data_file)
+                        break
 
     def __new__(self, *dt, **mp):
         if self.obj is None:
@@ -32,8 +45,10 @@ class Wothp(object):
         sr = GUI.screenResolution()
         self.window.width = sr[0]
         self.window.height = sr[1]
-        self.shadow.position = (sr[0]/2 + 3, 46, 1)
-        self.label.position = (sr[0]/2 + 2, 45, 1)
+        x = self.config.get('x', -1) if self.config.get('x', -1) > 0 else sr[0]/2 + 2
+        y = self.config.get('y', -1) if self.config.get('y', -1) > 0 else 45
+        self.shadow.position = (x + 1, y + 1, 1)
+        self.label.position = (x, y, 1)
 
     def createLabel(self):
         self.window = GUI.Window('')
