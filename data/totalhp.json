@@ -1,5 +1,6 @@
 {
     "x": -1,
     "y": -1,
-    "font": "Courier New_15.dds"
+    "font": "Courier New_15.dds",
+    "static_color": "#FFFFFF"
 }

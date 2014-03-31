@@ -39,6 +39,12 @@ class Wothp(object):
             self.obj = object.__new__(self, *dt, **mp)
         return self.obj
 
+    @staticmethod
+    def hexToRgba(hex):
+        rgba = [int(hex[i:i+2], 16) for i in range(1,6,2)]
+        rgba.append(255)
+        return tuple(rgba)
+
     def onChangeScreenResolution(self):
         if self.window is None:
             return
@@ -68,7 +74,7 @@ class Wothp(object):
         self.shadow.verticalPositionMode = 'PIXEL'
         self.label = GUI.Text('')
         self.label.font = font
-        self.label.colour = (255.0, 255.0, 255.0, 255.0)
+        self.label.colour = self.hexToRgba(self.config.get('static_color', '#FFFFFF'))
         self.window.addChild(self.label)
         self.label.horizontalPositionMode = 'PIXEL'
         self.label.verticalPositionMode = 'PIXEL'
