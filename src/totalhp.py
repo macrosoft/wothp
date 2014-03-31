@@ -45,8 +45,12 @@ class Wothp(object):
         sr = GUI.screenResolution()
         self.window.width = sr[0]
         self.window.height = sr[1]
-        x = self.config.get('x', -1) if self.config.get('x', -1) > 0 else sr[0]/2 + 2
-        y = self.config.get('y', -1) if self.config.get('y', -1) > 0 else 45
+        x = self.config.get('x', -1)
+        if x < 0:
+            x = sr[0]/2 + 2
+        y = self.config.get('y', -1)
+        if y < 0:
+            y = 45
         self.shadow.position = (x + 1, y + 1, 1)
         self.label.position = (x, y, 1)
 
@@ -55,14 +59,15 @@ class Wothp(object):
         self.window.heightMode = 'PIXEL'
         self.window.widthMode = 'PIXEL'
         GUI.addRoot(self.window)
-        self.shadow = GUI.Text("- / -")
-        self.shadow.font = 'Courier New_15.dds'
+        self.shadow = GUI.Text('')
+        font = self.config.get('font', 'Courier New_15.dds')
+        self.shadow.font = font
         self.shadow.colour = (0.0, 0.0, 0.0, 255.0)
         self.window.addChild(self.shadow)
         self.shadow.horizontalPositionMode = 'PIXEL'
         self.shadow.verticalPositionMode = 'PIXEL'
-        self.label = GUI.Text("- / -")
-        self.label.font = 'Courier New_15.dds'
+        self.label = GUI.Text('')
+        self.label.font = font
         self.label.colour = (255.0, 255.0, 255.0, 255.0)
         self.window.addChild(self.label)
         self.label.horizontalPositionMode = 'PIXEL'
