@@ -138,7 +138,7 @@ def new_Battle_afterCreate(self):
     wothp.reset()
     wothp.createLabel()
     vehicles = BigWorld.player().arena.vehicles
-    for key in self._Battle__vehicles.keys():
+    for key in vehicles.keys():
         vehicle = vehicles.get(key)
         wothp.insertVehicle(key, vehicle['vehicleType'].maxHealth)
     wothp.update()
