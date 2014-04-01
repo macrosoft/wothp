@@ -49,35 +49,46 @@ class Wothp(object):
         if self.window is None:
             return
         sr = GUI.screenResolution()
-        self.window.width = sr[0]
-        self.window.height = sr[1]
         x = self.config.get('x', -1)
         if x < 0:
-            x = sr[0]/2 + 2
+            x = sr[0]/2 - self.window.width/2 + 2
         y = self.config.get('y', -1)
         if y < 0:
-            y = 45
-        self.shadow.position = (x + 1, y + 1, 1)
-        self.label.position = (x, y, 1)
+            y = 30
+        self.window.position = (x, y, 1)
 
     def createLabel(self):
-        self.window = GUI.Window('')
+        self.window = GUI.Window('none')
+        self.window.colour = (0, 0, 0, 32)
+        self.window.materialFX = "BLEND"
+        self.window.verticalAnchor = "TOP"
+        self.window.horizontalAnchor = "LEFT"
+        self.window.horizontalPositionMode = 'PIXEL'
+        self.window.verticalPositionMode = 'PIXEL'
         self.window.heightMode = 'PIXEL'
         self.window.widthMode = 'PIXEL'
+        self.window.width = self.config.get('width', 156)
+        self.window.height = self.config.get('height', 24)
         GUI.addRoot(self.window)
-        self.shadow = GUI.Text('')
         font = self.config.get('font', 'Courier New_15.dds')
+        self.shadow = GUI.Text('')
         self.shadow.font = font
         self.shadow.colour = (0.0, 0.0, 0.0, 255.0)
         self.window.addChild(self.shadow)
+        self.shadow.verticalAnchor = "TOP"
+        self.shadow.horizontalAnchor = "CENTER"
         self.shadow.horizontalPositionMode = 'PIXEL'
         self.shadow.verticalPositionMode = 'PIXEL'
+        self.shadow.position = (self.window.width/2 + 1, 1, 1)
         self.label = GUI.Text('')
         self.label.font = font
         self.label.colour = self.hexToRgba(self.config.get('static_color', '#FFFFFF'))
         self.window.addChild(self.label)
+        self.label.verticalAnchor = "TOP"
+        self.label.horizontalAnchor = "CENTER"
         self.label.horizontalPositionMode = 'PIXEL'
         self.label.verticalPositionMode = 'PIXEL'
+        self.label.position = (self.window.width/2, 0, 1)
         self.onChangeScreenResolution()
 
     def deleteLabel(self):
@@ -118,6 +129,7 @@ class Wothp(object):
             self.update()
 
     def setVisible(self, flag):
+        self.window.visible = flag
         self.shadow.visible = flag
         self.label.visible = flag
 
