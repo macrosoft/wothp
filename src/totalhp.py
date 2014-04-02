@@ -68,8 +68,9 @@ class Wothp(object):
         item.position = (self.window.width/2 + x, y, 1)
 
     def createLabel(self):
-        self.window = GUI.Window('none')
-        self.window.colour = (0, 0, 0, 32)
+        self.window = GUI.Window(os.path.join('scripts', 'client', 'mods', 'totalhp_bg.dds'))
+        #self.window.colour = (0, 0, 0, 32)
+        self.window.colour = (255, 255, 255, 255)
         self.window.materialFX = "BLEND"
         self.window.verticalAnchor = "TOP"
         self.window.horizontalAnchor = "LEFT"
