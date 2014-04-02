@@ -57,6 +57,16 @@ class Wothp(object):
             y = 30
         self.window.position = (x, y, 1)
 
+    def installItem(self, item, x, y):
+        font = self.config.get('font', 'Courier New_15.dds')
+        item.font = font
+        self.window.addChild(item)
+        item.verticalAnchor = "TOP"
+        item.horizontalAnchor = "CENTER"
+        item.horizontalPositionMode = 'PIXEL'
+        item.verticalPositionMode = 'PIXEL'
+        item.position = (self.window.width/2 + x, y, 1)
+
     def createLabel(self):
         self.window = GUI.Window('none')
         self.window.colour = (0, 0, 0, 32)
@@ -70,25 +80,12 @@ class Wothp(object):
         self.window.width = self.config.get('width', 156)
         self.window.height = self.config.get('height', 24)
         GUI.addRoot(self.window)
-        font = self.config.get('font', 'Courier New_15.dds')
         self.shadow = GUI.Text('')
-        self.shadow.font = font
         self.shadow.colour = (0.0, 0.0, 0.0, 255.0)
-        self.window.addChild(self.shadow)
-        self.shadow.verticalAnchor = "TOP"
-        self.shadow.horizontalAnchor = "CENTER"
-        self.shadow.horizontalPositionMode = 'PIXEL'
-        self.shadow.verticalPositionMode = 'PIXEL'
-        self.shadow.position = (self.window.width/2 + 1, 1, 1)
+        self.installItem(self.shadow, 1, 1)
         self.label = GUI.Text('')
-        self.label.font = font
         self.label.colour = self.hexToRgba(self.config.get('static_color', '#FFFFFF'))
-        self.window.addChild(self.label)
-        self.label.verticalAnchor = "TOP"
-        self.label.horizontalAnchor = "CENTER"
-        self.label.horizontalPositionMode = 'PIXEL'
-        self.label.verticalPositionMode = 'PIXEL'
-        self.label.position = (self.window.width/2, 0, 1)
+        self.installItem(self.label, 0, 0)
         self.onChangeScreenResolution()
 
     def deleteLabel(self):
