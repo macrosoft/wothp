@@ -34,6 +34,9 @@ class Wothp(object):
                     with open(conf_file) as data_file:
                         self.config = json.load(data_file)
                         break
+        colors = colors = self.config.get('colors')
+        for item in colors:
+            item['color'] = self.hexToRgba(item['color'])
 
     def __new__(self, *dt, **mp):
         if self.obj is None:
@@ -45,6 +48,13 @@ class Wothp(object):
         rgba = [int(hex[i:i+2], 16) for i in range(1,6,2)]
         rgba.append(255)
         return tuple(rgba)
+
+    @staticmethod
+    def gradColor(startColor, endColor, val):
+        grad = []
+        for i in [0, 1, 2, 3]:
+            grad.append(startColor[i]*(1.0 - val) + endColor[i]*val)
+        return tuple(grad)
 
     def onChangeScreenResolution(self):
         if self.window is None:
@@ -84,10 +94,10 @@ class Wothp(object):
         self.window.height = self.config.get('height', 24)
         GUI.addRoot(self.window)
         self.shadow = GUI.Text('')
-        self.shadow.colour = (0.0, 0.0, 0.0, 255.0)
+        self.shadow.colour = (0, 0, 0, 255)
         self.installItem(self.shadow, 1, 1)
         self.label = GUI.Text('')
-        self.label.colour = self.hexToRgba(self.config.get('static_color', '#FFFFFF'))
+        self.label.colour = (255, 255, 255, 0)
         self.installItem(self.label, 0, 0)
         self.onChangeScreenResolution()
 
@@ -119,6 +129,24 @@ class Wothp(object):
         text = "{:>6} {:1} {:<6}".format(totalAlly, delimiter, totalEnemy)
         self.shadow.text = text
         self.label.text = text
+        ratio = float(totalAlly)/max(totalEnemy, 1)
+        colors = self.config.get('colors')
+        color = (255, 255, 255, 255)
+        if ratio <= colors[0]['value']:
+            color = colors[0]['color']
+        elif ratio >= colors[-1]['value']:
+            color = colors[-1]['color']
+        else:
+            sVal = colors[0]['value']
+            eVal = colors[1]['value']
+            i = 1
+            while eVal < ratio:
+                sVal = colors[i]['value']
+                i += 1
+                eVal = colors[i]['value']
+            val = float(ratio - sVal)/(eVal - sVal)
+            color = self.gradColor(colors[i - 1]['color'], colors[i]['color'], val)
+        self.label.colour = color
 
     def insertVehicle(self, vid, health):
         self.hpDict[vid] = health

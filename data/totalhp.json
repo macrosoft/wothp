@@ -4,7 +4,12 @@
     "width": 186,
     "height": 24,
     "font": "Courier New_15.dds",
-    "static_color": "#FFFFFF",
+    "colors": [
+            {"value": 0.5, "color": "#FE0E00"},
+            {"value": 0.95, "color": "#FFFFFF"},
+            {"value": 1.05, "color": "#FFFFFF"},
+            {"value": 1.5, "color": "#60FF00"}
+    ],
     "background": true,
     "team_damage": "<font color='#00EAFF'>{{attacker-name}} ({{attacker-vehicle}})</font> повредил союзника {{victim-name}} ({{victim-vehicle}}) на <font color='#FFDD33'>{{damage}}</font>!"
 }
