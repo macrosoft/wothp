@@ -68,8 +68,9 @@ class Wothp(object):
         item.position = (self.window.width/2 + x, y, 1)
 
     def createLabel(self):
-        self.window = GUI.Window(os.path.join('scripts', 'client', 'mods', 'totalhp_bg.dds'))
-        #self.window.colour = (0, 0, 0, 32)
+        background = os.path.join('scripts', 'client', 'mods', 'totalhp_bg.dds') \
+            if self.config.get('background',True) else ''
+        self.window = GUI.Window(background)
         self.window.colour = (255, 255, 255, 255)
         self.window.materialFX = "BLEND"
         self.window.verticalAnchor = "TOP"
@@ -78,7 +79,7 @@ class Wothp(object):
         self.window.verticalPositionMode = 'PIXEL'
         self.window.heightMode = 'PIXEL'
         self.window.widthMode = 'PIXEL'
-        self.window.width = self.config.get('width', 156)
+        self.window.width = self.config.get('width', 186)
         self.window.height = self.config.get('height', 24)
         GUI.addRoot(self.window)
         self.shadow = GUI.Text('')

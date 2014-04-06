@@ -4,5 +4,6 @@
     "width": 186,
     "height": 24,
     "font": "Courier New_15.dds",
-    "static_color": "#FFFFFF"
+    "static_color": "#FFFFFF",
+    "background": true
 }
