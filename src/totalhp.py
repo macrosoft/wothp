@@ -9,6 +9,7 @@ from Avatar import PlayerAvatar
 from ClientArena import ClientArena
 from gui import g_guiResetters
 from gui.Scaleform.Battle import Battle, VehicleMarkersManager
+from messenger import MessengerEntry
 from xml.dom import minidom
 from Vehicle import Vehicle
 from debug_utils import *
@@ -127,6 +128,9 @@ class Wothp(object):
             self.hpDict[vid] = max(health, 0)
             self.update()
 
+    def getVehicleHealth(self, vid):
+        return self.hpDict.get(vid, 0)
+
     def setVisible(self, flag):
         self.window.visible = flag
         self.shadow.visible = flag
@@ -195,6 +199,18 @@ def new_Vehicle_onHealthChanged(self, newHealth, attackerID, attackReasonID):
     else:
         old_Vehicle_onHealthChanged(self, newHealth, attackerID, attackReasonID)
         wothp = Wothp()
+        damage = wothp.getVehicleHealth(self.id) - max(0, newHealth)
+        player = BigWorld.player()
+        attacker = player.arena.vehicles.get(attackerID)
+        if damage > 0 and player.team == self.publicInfo.team and \
+            attacker['team'] == self.publicInfo.team and self.id != attackerID:
+            message = wothp.config.get('team_damage', '')
+            message = message.replace('{{damage}}', str(damage))
+            message = message.replace('{{victim-name}}', self.publicInfo.name)
+            message = message.replace('{{victim-vehicle}}', self.typeDescriptor.type.shortUserString)
+            message = message.replace('{{attacker-name}}', attacker['name'])
+            message = message.replace('{{attacker-vehicle}}', attacker['vehicleType'].type.shortUserString)
+            MessengerEntry.g_instance.gui.addClientMessage(message)
         wothp.updateVehicle(self.id, newHealth)
         return None
 
