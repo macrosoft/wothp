@@ -3,7 +3,7 @@
     "y": -1,
     "width": 186,
     "height": 24,
-    "font": "Courier New_15.dds",
+    "font": "default_medium.font",
     "colors": [
             {"value": 0.5, "color": "#FE0E00"},
             {"value": 0.95, "color": "#FFFFFF"},
