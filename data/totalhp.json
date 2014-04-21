@@ -5,7 +5,7 @@
     "height": 24,
     "font": "default_medium.font",
     "colors": [
-            {"value": 0.5, "color": "#FE0E00"},
+            {"value": 0.67, "color": "#FE0E00"},
             {"value": 0.95, "color": "#FFFFFF"},
             {"value": 1.05, "color": "#FFFFFF"},
             {"value": 1.5, "color": "#60FF00"}
