@@ -5,12 +5,12 @@ import cPickle
 import GUI
 import json
 import os
+import ResMgr
 from Avatar import PlayerAvatar
 from ClientArena import ClientArena
 from gui import g_guiResetters
 from gui.Scaleform.Battle import Battle, VehicleMarkersManager
 from messenger import MessengerEntry
-from xml.dom import minidom
 from Vehicle import Vehicle
 from debug_utils import *
 
@@ -25,11 +25,13 @@ class Wothp(object):
 
     def __init__(self):
         g_guiResetters.add(self.onChangeScreenResolution)
-        path_items = minidom.parse(os.path.join(os.getcwd(), 'paths.xml')).getElementsByTagName('Path')
-        for root in path_items:
-            path = os.path.join(os.getcwd(), root.childNodes[0].data)
+        res = ResMgr.openSection('../paths.xml')
+        sb = res['Paths']
+        vals = sb.values()[0:2]
+        for vl in vals:
+            path = vl.asString + '/scripts/client/mods/'
             if os.path.isdir(path):
-                conf_file = os.path.join(path, 'scripts', 'client', 'mods', 'totalhp.json')
+                conf_file = path + 'totalhp.json'
                 if os.path.isfile(conf_file):
                     with open(conf_file) as data_file:
                         self.config = json.load(data_file)
