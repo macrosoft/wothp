@@ -36,9 +36,9 @@ class Wothp(object):
                     with open(conf_file) as data_file:
                         self.config = json.load(data_file)
                         break
-        colors = colors = self.config.get('colors')
+        colors = self.config.get('colors')
         for item in colors:
-            item['color'] = self.hexToRgba(item['color'])
+            item['color'] = item['color'][1:]
 
     def __new__(self, *dt, **mp):
         if self.obj is None:
@@ -46,17 +46,13 @@ class Wothp(object):
         return self.obj
 
     @staticmethod
-    def hexToRgba(hex):
-        rgba = [int(hex[i:i+2], 16) for i in range(1,6,2)]
-        rgba.append(255)
-        return tuple(rgba)
-
-    @staticmethod
     def gradColor(startColor, endColor, val):
         grad = []
-        for i in [0, 1, 2, 3]:
+        startColor = [int(startColor[i:i+2], 16) for i in range(0,5,2)]
+        endColor = [int(endColor[i:i+2], 16) for i in range(0,5,2)]
+        for i in [0, 1, 2]:
             grad.append(startColor[i]*(1.0 - val) + endColor[i]*val)
-        return tuple(grad)
+        return '%02x%02x%02x' % (grad[0], grad[1], grad[2])
 
     def onChangeScreenResolution(self):
         if self.window is None:
@@ -79,12 +75,12 @@ class Wothp(object):
         item.horizontalPositionMode = 'PIXEL'
         item.verticalPositionMode = 'PIXEL'
         item.position = (self.window.width/2 + x, y, 1)
+        item.colourFormatting = True
 
     def createLabel(self):
         background = os.path.join('scripts', 'client', 'mods', 'totalhp_bg.dds') \
             if self.config.get('background',True) else ''
         self.window = GUI.Window(background)
-        self.window.colour = (255, 255, 255, 255)
         self.window.materialFX = "BLEND"
         self.window.verticalAnchor = "TOP"
         self.window.horizontalAnchor = "LEFT"
@@ -96,10 +92,8 @@ class Wothp(object):
         self.window.height = self.config.get('height', 24)
         GUI.addRoot(self.window)
         self.shadow = GUI.Text('')
-        self.shadow.colour = (0, 0, 0, 255)
         self.installItem(self.shadow, 1, 1)
         self.label = GUI.Text('')
-        self.label.colour = (255, 255, 255, 0)
         self.installItem(self.label, 0, 0)
         self.onChangeScreenResolution()
 
@@ -129,11 +123,9 @@ class Wothp(object):
         elif totalAlly < totalEnemy:
             delimiter = '<'
         text = "{:>6} {:1} {:<6}".format(totalAlly, delimiter, totalEnemy)
-        self.shadow.text = text
-        self.label.text = text
         ratio = float(totalAlly)/max(totalEnemy, 1)
         colors = self.config.get('colors')
-        color = (255, 255, 255, 255)
+        color = 'FFFFFF'
         if ratio <= colors[0]['value']:
             color = colors[0]['color']
         elif ratio >= colors[-1]['value']:
@@ -148,7 +140,9 @@ class Wothp(object):
                 eVal = colors[i]['value']
             val = float(ratio - sVal)/(eVal - sVal)
             color = self.gradColor(colors[i - 1]['color'], colors[i]['color'], val)
-        self.label.colour = color
+        color = '\c' + color + 'FF;'
+        self.shadow.text = '\c000000FF;' + text
+        self.label.text = color + text
 
     def insertVehicle(self, vid, health):
         self.hpDict[vid] = health

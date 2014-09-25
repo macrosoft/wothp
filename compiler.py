@@ -1,6 +1,6 @@
 import py_compile, zipfile, os
 
-WOTVersion = "0.9.2"
+WOTVersion = "0.9.3"
 
 if os.path.exists("totalhp.zip"):
     os.remove("totalhp.zip")
