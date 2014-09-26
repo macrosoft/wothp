@@ -14,11 +14,40 @@ from messenger import MessengerEntry
 from Vehicle import Vehicle
 from debug_utils import *
 
+class TextLabel(object):
+    label = None
+    shadow = None
+    window = None
+
+    def __init__(self, parent, x, y, font):
+        self.window = parent
+        self.shadow = GUI.Text('')
+        self.installItem(self.shadow, x + 1, y + 1, font)
+        self.label = GUI.Text('')
+        self.installItem(self.label, x, y, font)
+
+    def installItem(self, item, x, y, font):
+        item.font = font
+        self.window.addChild(item)
+        item.verticalAnchor = "TOP"
+        item.horizontalAnchor = "CENTER"
+        item.horizontalPositionMode = 'PIXEL'
+        item.verticalPositionMode = 'PIXEL'
+        item.position = (self.window.width/2 + x, y, 1)
+        item.colourFormatting = True
+
+    def setVisible(self, flag):
+        self.shadow.visible = flag
+        self.label.visible = flag
+
+    def setText(self, text, color = 'FFFFFF'):
+        self.shadow.text = '\c000000FF;' + text
+        self.label.text = '\c' + color + 'FF;' + text
+        
 class Wothp(object):
     obj = None
     window = None
-    shadow = None
-    label = None
+    hpPanel = None
     config = {}
     hpDict = {}
     playerTeam = 0
@@ -66,17 +95,6 @@ class Wothp(object):
             y = 30
         self.window.position = (x, y, 1)
 
-    def installItem(self, item, x, y):
-        font = self.config.get('font', 'Courier New_15.dds')
-        item.font = font
-        self.window.addChild(item)
-        item.verticalAnchor = "TOP"
-        item.horizontalAnchor = "CENTER"
-        item.horizontalPositionMode = 'PIXEL'
-        item.verticalPositionMode = 'PIXEL'
-        item.position = (self.window.width/2 + x, y, 1)
-        item.colourFormatting = True
-
     def createLabel(self):
         background = os.path.join('scripts', 'client', 'mods', 'totalhp_bg.dds') \
             if self.config.get('background',True) else ''
@@ -89,12 +107,10 @@ class Wothp(object):
         self.window.heightMode = 'PIXEL'
         self.window.widthMode = 'PIXEL'
         self.window.width = self.config.get('width', 186)
-        self.window.height = self.config.get('height', 24)
+        self.window.height = self.config.get('height', 50)
         GUI.addRoot(self.window)
-        self.shadow = GUI.Text('')
-        self.installItem(self.shadow, 1, 1)
-        self.label = GUI.Text('')
-        self.installItem(self.label, 0, 0)
+        font = self.config.get('font', 'default_medium.font')
+        self.hpPanel = TextLabel(self.window, 0, 0, font)
         self.onChangeScreenResolution()
 
     def deleteLabel(self):
@@ -140,9 +156,7 @@ class Wothp(object):
                 eVal = colors[i]['value']
             val = float(ratio - sVal)/(eVal - sVal)
             color = self.gradColor(colors[i - 1]['color'], colors[i]['color'], val)
-        color = '\c' + color + 'FF;'
-        self.shadow.text = '\c000000FF;' + text
-        self.label.text = color + text
+        self.hpPanel.setText(text, color)
 
     def insertVehicle(self, vid, health):
         self.hpDict[vid] = health
@@ -157,8 +171,7 @@ class Wothp(object):
 
     def setVisible(self, flag):
         self.window.visible = flag
-        self.shadow.visible = flag
-        self.label.visible = flag
+        self.hpPanel.setVisible(flag)
 
 old_PlayerAvatar_setVisibleGUI = PlayerAvatar._PlayerAvatar__setVisibleGUI
 
