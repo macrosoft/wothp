@@ -48,6 +48,7 @@ class Wothp(object):
     obj = None
     window = None
     hpPanel = None
+    mainCaliber = None
     config = {}
     hpDict = {}
     playerTeam = 0
@@ -107,15 +108,20 @@ class Wothp(object):
         self.window.heightMode = 'PIXEL'
         self.window.widthMode = 'PIXEL'
         self.window.width = self.config.get('width', 186)
-        self.window.height = self.config.get('height', 50)
+        self.window.height = self.config.get('height', 32)
         GUI.addRoot(self.window)
         font = self.config.get('font', 'default_medium.font')
         self.hpPanel = TextLabel(self.window, 0, 0, font)
+        font = self.config.get('main_caliber_font', 'default_smaller.font')
+        self.mainCaliber = TextLabel(self.window, 145, 0, font)
+        self.mainCaliber.setText(self.config.get('main_caliber_text', 'Main caliber: ') + '-')
         self.onChangeScreenResolution()
 
     def deleteLabel(self):
         GUI.delRoot(self.window)
         self.window = None
+        self.totalAlly = 0
+        self.totalEnemy = 0
 
     def reset(self):
         self.playerTeam = BigWorld.player().team
@@ -124,22 +130,22 @@ class Wothp(object):
     def update(self):
         if self.window is None:
             return
-        totalAlly = 0
-        totalEnemy = 0
+        self.totalAlly = 0
+        self.totalEnemy = 0
         vehicles = BigWorld.player().arena.vehicles
         for key in self.hpDict:
             vehicle = vehicles.get(key)
             if vehicle['team'] == self.playerTeam:
-                totalAlly += self.hpDict[key]
+                self.totalAlly += self.hpDict[key]
             else:
-                totalEnemy += self.hpDict[key]
+                self.totalEnemy += self.hpDict[key]
         delimiter = ':'
-        if totalAlly > totalEnemy:
+        if self.totalAlly > self.totalEnemy:
             delimiter = '>'
-        elif totalAlly < totalEnemy:
+        elif self.totalAlly < self.totalEnemy:
             delimiter = '<'
-        text = "{:>6} {:1} {:<6}".format(totalAlly, delimiter, totalEnemy)
-        ratio = float(totalAlly)/max(totalEnemy, 1)
+        text = "{:>6} {:1} {:<6}".format(self.totalAlly, delimiter, self.totalEnemy)
+        ratio = float(self.totalAlly)/max(self.totalEnemy, 1)
         colors = self.config.get('colors')
         color = 'FFFFFF'
         if ratio <= colors[0]['value']:
@@ -194,6 +200,10 @@ def new_Battle_afterCreate(self):
         vehicle = vehicles.get(key)
         wothp.insertVehicle(key, vehicle['vehicleType'].maxHealth)
     wothp.update()
+    mainCaliberValue = int(wothp.totalEnemy/5)
+    if mainCaliberValue*5 < wothp.totalEnemy:
+        mainCaliberValue += 1
+    wothp.mainCaliber.setText(wothp.config.get('main_caliber_text', 'Main caliber: ') + str(mainCaliberValue))
 
 Battle.afterCreate = new_Battle_afterCreate
 
