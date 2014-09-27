@@ -6,6 +6,8 @@
     "font": "default_medium.font",
     "main_caliber_font": "default_smaller.font",
     "main_caliber_text": "Основной калибр: ",
+    "avg_dmg_font": "default_smaller.font",
+    "avg_dmg_text": "Средний урон: ",
     "colors": [
             {"value": 0.67, "color": "#FE0E00"},
             {"value": 0.95, "color": "#FFFFFF"},

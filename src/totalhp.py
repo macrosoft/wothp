@@ -6,18 +6,31 @@ import GUI
 import json
 import os
 import ResMgr
+from adisp import process
 from Avatar import PlayerAvatar
 from ClientArena import ClientArena
 from gui import g_guiResetters
+from gui.ClientHangarSpace import ClientHangarSpace
 from gui.Scaleform.Battle import Battle, VehicleMarkersManager
+from gui.shared import g_itemsCache
 from messenger import MessengerEntry
 from Vehicle import Vehicle
 from debug_utils import *
+
+@process
+def updateDossier(vcDesc):
+    yield g_itemsCache.update(6)
+    dossier = g_itemsCache.items.getVehicleDossier(vcDesc)
+    wothp = Wothp()
+    avgDmg = dossier.getTotalStats().getAvgDamage()
+    wothp.avgDmgDict[vcDesc] = int(avgDmg) if avgDmg else None
+    LOG_NOTE(int(avgDmg))
 
 class TextLabel(object):
     label = None
     shadow = None
     window = None
+    mainCaliberValue = 0
 
     def __init__(self, parent, x, y, font):
         self.window = parent
@@ -41,16 +54,21 @@ class TextLabel(object):
         self.label.visible = flag
 
     def setText(self, text, color = 'FFFFFF'):
-        self.shadow.text = '\c000000FF;' + text
+        shadowText = text.replace('\c60FF00FF;','')
+        self.shadow.text = '\c000000FF;' + shadowText
         self.label.text = '\c' + color + 'FF;' + text
         
 class Wothp(object):
     obj = None
     window = None
     hpPanel = None
-    mainCaliber = None
+    mainCaliberPanel = None
+    avgDmgPanel = None
+    avgDmg = None
     config = {}
     hpDict = {}
+    aliveDict = {}
+    avgDmgDict = {}
     playerTeam = 0
 
     def __init__(self):
@@ -113,8 +131,9 @@ class Wothp(object):
         font = self.config.get('font', 'default_medium.font')
         self.hpPanel = TextLabel(self.window, 0, 0, font)
         font = self.config.get('main_caliber_font', 'default_smaller.font')
-        self.mainCaliber = TextLabel(self.window, 145, 0, font)
-        self.mainCaliber.setText(self.config.get('main_caliber_text', 'Main caliber: ') + '-')
+        self.mainCaliberPanel = TextLabel(self.window, 145, 0, font)
+        font = self.config.get('avg_dmg_font', 'default_smaller.font')
+        self.avgDmgPanel = TextLabel(self.window, -135, 0, font)
         self.onChangeScreenResolution()
 
     def deleteLabel(self):
@@ -125,7 +144,9 @@ class Wothp(object):
 
     def reset(self):
         self.playerTeam = BigWorld.player().team
+        self.mainCaliberValue = 0
         self.hpDict = {}
+        self.aliveDict = {}
 
     def update(self):
         if self.window is None:
@@ -134,6 +155,8 @@ class Wothp(object):
         self.totalEnemy = 0
         vehicles = BigWorld.player().arena.vehicles
         for key in self.hpDict:
+            if not self.aliveDict[key]:
+                continue
             vehicle = vehicles.get(key)
             if vehicle['team'] == self.playerTeam:
                 self.totalAlly += self.hpDict[key]
@@ -163,14 +186,32 @@ class Wothp(object):
             val = float(ratio - sVal)/(eVal - sVal)
             color = self.gradColor(colors[i - 1]['color'], colors[i]['color'], val)
         self.hpPanel.setText(text, color)
+        mainCaliberText = ''
+        if self.mainCaliberValue > 0:
+            mainCaliberText = self.config.get('main_caliber_text', 'Main caliber: ') + str(self.mainCaliberValue)
+        else:
+            mainCaliberText = self.config.get('main_caliber_text', 'Main caliber: ') + '\c60FF00FF;+' + str(abs(self.mainCaliberValue))
+        self.mainCaliberPanel.setText(mainCaliberText)
+        if self.avgDmg is None:
+            return
+        avgDmgText = ''
+        if self.avgDmg > 0:
+            avgDmgText = self.config.get('avg_dmg_text', 'Avg damage: ') + str(self.avgDmg)
+        else:
+            avgDmgText = self.config.get('avg_dmg_text', 'Avg damage: ') + '\c60FF00FF;+' + str(abs(self.avgDmg))
+        self.avgDmgPanel.setText(avgDmgText)
 
     def insertVehicle(self, vid, health):
         self.hpDict[vid] = health
+        self.aliveDict[vid] = True
 
     def updateVehicle(self, vid, health):
         if self.hpDict.get(vid, -1) > health:
             self.hpDict[vid] = max(health, 0)
             self.update()
+
+    def killVehicle(self, vid):
+        self.aliveDict[vid] = False
 
     def getVehicleHealth(self, vid):
         return self.hpDict.get(vid, 0)
@@ -195,15 +236,22 @@ def new_Battle_afterCreate(self):
     wothp = Wothp()
     wothp.reset()
     wothp.createLabel()
+    player = BigWorld.player()
+    playerVehicle = player.arena.vehicles.get(player.playerVehicleID)
+    cDescr = playerVehicle['vehicleType'].type.compactDescr
+    wothp.avgDmg = wothp.avgDmgDict.get(cDescr, None)
+    wothp.avgDmgDict[cDescr] = None
     vehicles = BigWorld.player().arena.vehicles
     for key in vehicles.keys():
         vehicle = vehicles.get(key)
         wothp.insertVehicle(key, vehicle['vehicleType'].maxHealth)
     wothp.update()
-    mainCaliberValue = int(wothp.totalEnemy/5)
-    if mainCaliberValue*5 < wothp.totalEnemy:
-        mainCaliberValue += 1
-    wothp.mainCaliber.setText(wothp.config.get('main_caliber_text', 'Main caliber: ') + str(mainCaliberValue))
+    wothp.mainCaliberValue = int(wothp.totalEnemy/5)
+    if wothp.mainCaliberValue*5 < wothp.totalEnemy:
+        wothp.mainCaliberValue += 1
+    wothp.mainCaliberPanel.setText(wothp.config.get('main_caliber_text', 'Main caliber: ') + str(wothp.mainCaliberValue))
+    if wothp.avgDmg is not None:
+        wothp.avgDmgPanel.setText(wothp.config.get('avg_dmg_text', 'Avg damage: ') + str(wothp.avgDmg))
 
 Battle.afterCreate = new_Battle_afterCreate
 
@@ -222,7 +270,7 @@ def new_ClientArena__onVehicleKilled(self, argStr):
     old_ClientArena_onVehicleKilled(self, argStr)
     victimID, killerID, reason = cPickle.loads(argStr)
     wothp = Wothp()
-    wothp.updateVehicle(victimID, 0)
+    wothp.killVehicle(victimID)
 
 ClientArena._ClientArena__onVehicleKilled = new_ClientArena__onVehicleKilled
 
@@ -252,6 +300,9 @@ def new_Vehicle_onHealthChanged(self, newHealth, attackerID, attackReasonID):
         damage = wothp.getVehicleHealth(self.id) - max(0, newHealth)
         player = BigWorld.player()
         attacker = player.arena.vehicles.get(attackerID)
+        if player.playerVehicleID == attackerID and player.team == self.publicInfo.team:
+            wothp.mainCaliberValue -= damage
+            wothp.avgDmg -= damage
         if damage > 0 and player.team == self.publicInfo.team and \
             attacker['team'] == self.publicInfo.team and self.id != attackerID:
             message = message.replace('{{damage}}', str(damage))
@@ -264,3 +315,14 @@ def new_Vehicle_onHealthChanged(self, newHealth, attackerID, attackReasonID):
         return None
 
 Vehicle.onHealthChanged = new_Vehicle_onHealthChanged
+
+old_cs_recreateVehicle = ClientHangarSpace.recreateVehicle
+
+def new_cs_recreateVehicle(self, vDesc, vState, onVehicleLoadedCallback = None):
+    old_cs_recreateVehicle(self, vDesc, vState, onVehicleLoadedCallback)
+    vcDesc = vDesc.type.compactDescr
+    wothp = Wothp()
+    if wothp.avgDmgDict.get(wothp, None) is None:
+        updateDossier(vDesc.type.compactDescr)
+
+ClientHangarSpace.recreateVehicle = new_cs_recreateVehicle
