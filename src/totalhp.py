@@ -14,17 +14,18 @@ from gui.ClientHangarSpace import ClientHangarSpace
 from gui.Scaleform.Battle import Battle, VehicleMarkersManager
 from gui.shared import g_itemsCache
 from messenger import MessengerEntry
+from PlayerEvents import g_playerEvents
 from Vehicle import Vehicle
 from debug_utils import *
 
 @process
 def updateDossier(vcDesc):
+    g_itemsCache.items.invalidateCache()
     yield g_itemsCache.update(6)
     dossier = g_itemsCache.items.getVehicleDossier(vcDesc)
     wothp = Wothp()
-    avgDmg = dossier.getTotalStats().getAvgDamage()
+    avgDmg = dossier.getRandomStats().getAvgDamage()
     wothp.avgDmgDict[vcDesc] = int(avgDmg) if avgDmg else None
-    LOG_NOTE(int(avgDmg))
 
 class TextLabel(object):
     label = None
@@ -73,6 +74,7 @@ class Wothp(object):
 
     def __init__(self):
         g_guiResetters.add(self.onChangeScreenResolution)
+        g_playerEvents.onBattleResultsReceived += self.battleResultsReceived
         res = ResMgr.openSection('../paths.xml')
         sb = res['Paths']
         vals = sb.values()[0:2]
@@ -113,6 +115,10 @@ class Wothp(object):
         if y < 0:
             y = 30
         self.window.position = (x, y, 1)
+
+    def battleResultsReceived(self, isActiveVehicle, results):
+        vcDesc = results['personal']['typeCompDescr']
+        updateDossier(vcDesc)
 
     def createLabel(self):
         background = os.path.join('scripts', 'client', 'mods', 'totalhp_bg.dds') \
@@ -300,9 +306,10 @@ def new_Vehicle_onHealthChanged(self, newHealth, attackerID, attackReasonID):
         damage = wothp.getVehicleHealth(self.id) - max(0, newHealth)
         player = BigWorld.player()
         attacker = player.arena.vehicles.get(attackerID)
-        if player.playerVehicleID == attackerID and player.team == self.publicInfo.team:
+        if player.playerVehicleID == attackerID and player.team != self.publicInfo.team:
             wothp.mainCaliberValue -= damage
-            wothp.avgDmg -= damage
+            if wothp.avgDmg is not None:
+                wothp.avgDmg -= damage
         if damage > 0 and player.team == self.publicInfo.team and \
             attacker['team'] == self.publicInfo.team and self.id != attackerID:
             message = message.replace('{{damage}}', str(damage))
@@ -322,7 +329,7 @@ def new_cs_recreateVehicle(self, vDesc, vState, onVehicleLoadedCallback = None):
     old_cs_recreateVehicle(self, vDesc, vState, onVehicleLoadedCallback)
     vcDesc = vDesc.type.compactDescr
     wothp = Wothp()
-    if wothp.avgDmgDict.get(wothp, None) is None:
+    if wothp.avgDmgDict.get(vcDesc, None) is None:
         updateDossier(vDesc.type.compactDescr)
 
 ClientHangarSpace.recreateVehicle = new_cs_recreateVehicle
