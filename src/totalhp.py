@@ -18,9 +18,6 @@ from PlayerEvents import g_playerEvents
 from Vehicle import Vehicle
 from debug_utils import *
 
-MAIN_CALIBER_TEXT = 'Main caliber: '
-AVG_DAMAGE_TEXT = 'Avg damage: '
-
 @process
 def updateDossier(vcDesc):
     g_itemsCache.items.invalidateCache()
@@ -34,26 +31,50 @@ class TextLabel(object):
     label = None
     shadow = None
     window = None
+    text = ''
+    x = 0
+    y = 0
+    hcentered = False
+    vcentered = False
     mainCaliberValue = 0
 
-    def __init__(self, parent, x, y, font):
-        self.window = parent
+    def __init__(self, config):
+        self.text = config.get('text', '')
+        self.x  = config.get('x', 0)
+        self.y  = config.get('y', 0)
+        self.hcentered  = config.get('hcentered', False)
+        self.vcentered  = config.get('vcentered', False)
+        background = os.path.join('scripts', 'client', 'mods', config.get('background')) \
+            if config.get('background', '') else ''
+        self.window = GUI.Window(background)
+        self.window.materialFX = "BLEND"
+        self.window.verticalAnchor = "TOP"
+        self.window.horizontalAnchor = "LEFT"
+        self.window.horizontalPositionMode = 'PIXEL'
+        self.window.verticalPositionMode = 'PIXEL'
+        self.window.heightMode = 'PIXEL'
+        self.window.widthMode = 'PIXEL'
+        self.window.width = config.get('width', 186)
+        self.window.height = config.get('height', 32)
+        GUI.addRoot(self.window)
         self.shadow = GUI.Text('')
-        self.installItem(self.shadow, x + 1, y + 1, font)
+        font = config.get('font', 'default_medium.font')
+        self.installItem(self.shadow, font)
         self.label = GUI.Text('')
-        self.installItem(self.label, x, y, font)
+        self.installItem(self.label, font)
 
-    def installItem(self, item, x, y, font):
+    def installItem(self, item, font):
         item.font = font
         self.window.addChild(item)
         item.verticalAnchor = "TOP"
         item.horizontalAnchor = "CENTER"
         item.horizontalPositionMode = 'PIXEL'
         item.verticalPositionMode = 'PIXEL'
-        item.position = (self.window.width/2 + x, y, 1)
+        item.position = (self.window.width/2, 0, 1)
         item.colourFormatting = True
 
     def setVisible(self, flag):
+        self.window.visible = flag
         self.shadow.visible = flag
         self.label.visible = flag
 
@@ -64,7 +85,6 @@ class TextLabel(object):
         
 class Wothp(object):
     obj = None
-    window = None
     hpPanel = None
     mainCaliberPanel = None
     avgDmgPanel = None
@@ -108,46 +128,32 @@ class Wothp(object):
         return '%02x%02x%02x' % (grad[0], grad[1], grad[2])
 
     def onChangeScreenResolution(self):
-        if self.window is None:
-            return
         sr = GUI.screenResolution()
-        x = self.config.get('x', -1)
-        if x < 0:
-            x = sr[0]/2 - self.window.width/2 + 2
-        y = self.config.get('y', -1)
-        if y < 0:
-            y = 30
-        self.window.position = (x, y, 1)
+        for panel in [self.hpPanel, self.mainCaliberPanel, self.avgDmgPanel]:
+            if panel is None:
+                continue
+            x = sr[0]/2 - panel.window.width /2 + panel.x if panel.hcentered else panel.x
+            y = sr[1]/2 - panel.window.height/2 + panel.y if panel.vcentered else panel.y
+            panel.window.position = (x, y, 1)
+            LOG_NOTE((x, y, 1))
 
     def battleResultsReceived(self, isActiveVehicle, results):
         vcDesc = results['personal']['typeCompDescr']
         updateDossier(vcDesc)
 
-    def createLabel(self):
-        background = os.path.join('scripts', 'client', 'mods', 'totalhp_bg.dds') \
-            if self.config.get('background',True) else ''
-        self.window = GUI.Window(background)
-        self.window.materialFX = "BLEND"
-        self.window.verticalAnchor = "TOP"
-        self.window.horizontalAnchor = "LEFT"
-        self.window.horizontalPositionMode = 'PIXEL'
-        self.window.verticalPositionMode = 'PIXEL'
-        self.window.heightMode = 'PIXEL'
-        self.window.widthMode = 'PIXEL'
-        self.window.width = self.config.get('width', 186)
-        self.window.height = self.config.get('height', 32)
-        GUI.addRoot(self.window)
-        font = self.config.get('font', 'default_medium.font')
-        self.hpPanel = TextLabel(self.window, 0, 0, font)
-        font = self.config.get('main_caliber_font', 'default_smaller.font')
-        self.mainCaliberPanel = TextLabel(self.window, 145, 0, font)
-        font = self.config.get('avg_dmg_font', 'default_smaller.font')
-        self.avgDmgPanel = TextLabel(self.window, -135, 0, font)
+    def createLabels(self):
+        self.hpPanel = TextLabel(self.config.get('hp_panel', {}))
+        self.mainCaliberPanel = TextLabel(self.config.get('maincaliber_panel', {}))
+        self.avgDmgPanel = TextLabel(self.config.get('avgdamage_panel', {}))
         self.onChangeScreenResolution()
 
-    def deleteLabel(self):
-        GUI.delRoot(self.window)
-        self.window = None
+    def deleteLabels(self):
+        GUI.delRoot(self.hpPanel.window)
+        self.hpPanel = None
+        GUI.delRoot(self.mainCaliberPanel.window)
+        self.mainCaliberPanel = None
+        GUI.delRoot(self.avgDmgPanel.window)
+        self.avgDmgPanel = None
         self.totalAlly = 0
         self.totalEnemy = 0
 
@@ -158,7 +164,7 @@ class Wothp(object):
         self.aliveDict = {}
 
     def update(self):
-        if self.window is None:
+        if self.hpPanel is None:
             return
         self.totalAlly = 0
         self.totalEnemy = 0
@@ -195,13 +201,13 @@ class Wothp(object):
             val = float(ratio - sVal)/(eVal - sVal)
             color = self.gradColor(colors[i - 1]['color'], colors[i]['color'], val)
         self.hpPanel.setText(text, color)
-        mainCaliberText = self.config.get('main_caliber_text', MAIN_CALIBER_TEXT)
+        mainCaliberText = self.mainCaliberPanel.text
         mainCaliberText += str(self.mainCaliberValue) if self.mainCaliberValue > 0 \
             else '\c60FF00FF;+' + str(abs(self.mainCaliberValue))
         self.mainCaliberPanel.setText(mainCaliberText)
         if self.avgDmg is None:
             return
-        avgDmgText =  self.config.get('avg_dmg_text', AVG_DAMAGE_TEXT)
+        avgDmgText =  self.avgDmgPanel.text
         avgDmgText += str(self.avgDmg) if self.avgDmg > 0 \
             else '\c60FF00FF;+' + str(abs(self.avgDmg))
         self.avgDmgPanel.setText(avgDmgText)
@@ -240,7 +246,7 @@ def new_Battle_afterCreate(self):
     old_Battle_afterCreate(self)
     wothp = Wothp()
     wothp.reset()
-    wothp.createLabel()
+    wothp.createLabels()
     player = BigWorld.player()
     playerVehicle = player.arena.vehicles.get(player.playerVehicleID)
     cDescr = playerVehicle['vehicleType'].type.compactDescr
@@ -254,9 +260,9 @@ def new_Battle_afterCreate(self):
     wothp.mainCaliberValue = int(wothp.totalEnemy/5)
     if wothp.mainCaliberValue*5 < wothp.totalEnemy:
         wothp.mainCaliberValue += 1
-    wothp.mainCaliberPanel.setText(wothp.config.get('main_caliber_text', MAIN_CALIBER_TEXT) + str(wothp.mainCaliberValue))
+    wothp.mainCaliberPanel.setText(wothp.mainCaliberPanel.text + str(wothp.mainCaliberValue))
     if wothp.avgDmg is not None:
-        wothp.avgDmgPanel.setText(wothp.config.get('avg_dmg_text', AVG_DAMAGE_TEXT) + str(wothp.avgDmg))
+        wothp.avgDmgPanel.setText(wothp.avgDmgPanel.text + str(wothp.avgDmg))
 
 Battle.afterCreate = new_Battle_afterCreate
 
@@ -265,7 +271,7 @@ old_Battle_beforeDelete = Battle.beforeDelete
 def new_beforeDelete(self):
     old_Battle_beforeDelete(self)
     wothp = Wothp()
-    wothp.deleteLabel()
+    wothp.deleteLabels()
 
 Battle.beforeDelete = new_beforeDelete
 

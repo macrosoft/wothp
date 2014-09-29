@@ -1,19 +1,41 @@
 {
-    "x": -1,
-    "y": -1,
-    "width": 450,
-    "height": 24,
-    "font": "default_medium.font",
-    "main_caliber_font": "default_smaller.font",
-    "main_caliber_text": "Основной калибр: ",
-    "avg_dmg_font": "default_smaller.font",
-    "avg_dmg_text": "Средний урон: ",
+    "hp_panel": {
+        "x": 0,
+        "y": 30,
+        "width": 186,
+        "height": 24,
+        "hcentered": true,
+        "vcentered": false,
+        "background": "totalhp_bg.dds",
+        "font": "default_medium.font"
+    },
+    "maincaliber_panel": {
+        "x": 150,
+        "y": 30,
+        "width": 160,
+        "height": 15,
+        "hcentered": true,
+        "vcentered": false,
+        "background": "totalhp_bg.dds",
+        "font": "default_smaller.font",
+        "text": "Основной калибр: "
+    },
+    "avgdamage_panel": {
+        "x": -150,
+        "y": 30,
+        "width": 160,
+        "height": 15,
+        "hcentered": true,
+        "vcentered": false,
+        "background": "totalhp_bg.dds",
+        "font": "default_smaller.font",
+        "text": "Средний урон: "
+    },
     "colors": [
             {"value": 0.67, "color": "#FE0E00"},
             {"value": 0.95, "color": "#FFFFFF"},
             {"value": 1.05, "color": "#FFFFFF"},
             {"value": 1.5, "color": "#60FF00"}
     ],
-    "background": true,
     "team_damage": "<font color='#00EAFF'>{{attacker-name}} ({{attacker-vehicle}})</font> повредил союзника {{victim-name}} ({{victim-vehicle}}) на <font color='#FFDD33'>{{damage}}</font>!"
 }
