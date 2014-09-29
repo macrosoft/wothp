@@ -18,6 +18,9 @@ from PlayerEvents import g_playerEvents
 from Vehicle import Vehicle
 from debug_utils import *
 
+MAIN_CALIBER_TEXT = 'Main caliber: '
+AVG_DAMAGE_TEXT = 'Avg damage: '
+
 @process
 def updateDossier(vcDesc):
     g_itemsCache.items.invalidateCache()
@@ -192,19 +195,15 @@ class Wothp(object):
             val = float(ratio - sVal)/(eVal - sVal)
             color = self.gradColor(colors[i - 1]['color'], colors[i]['color'], val)
         self.hpPanel.setText(text, color)
-        mainCaliberText = ''
-        if self.mainCaliberValue > 0:
-            mainCaliberText = self.config.get('main_caliber_text', 'Main caliber: ') + str(self.mainCaliberValue)
-        else:
-            mainCaliberText = self.config.get('main_caliber_text', 'Main caliber: ') + '\c60FF00FF;+' + str(abs(self.mainCaliberValue))
+        mainCaliberText = self.config.get('main_caliber_text', MAIN_CALIBER_TEXT)
+        mainCaliberText += str(self.mainCaliberValue) if self.mainCaliberValue > 0 \
+            else '\c60FF00FF;+' + str(abs(self.mainCaliberValue))
         self.mainCaliberPanel.setText(mainCaliberText)
         if self.avgDmg is None:
             return
-        avgDmgText = ''
-        if self.avgDmg > 0:
-            avgDmgText = self.config.get('avg_dmg_text', 'Avg damage: ') + str(self.avgDmg)
-        else:
-            avgDmgText = self.config.get('avg_dmg_text', 'Avg damage: ') + '\c60FF00FF;+' + str(abs(self.avgDmg))
+        avgDmgText =  self.config.get('avg_dmg_text', AVG_DAMAGE_TEXT)
+        avgDmgText += str(self.avgDmg) if self.avgDmg > 0 \
+            else '\c60FF00FF;+' + str(abs(self.avgDmg))
         self.avgDmgPanel.setText(avgDmgText)
 
     def insertVehicle(self, vid, health):
@@ -255,9 +254,9 @@ def new_Battle_afterCreate(self):
     wothp.mainCaliberValue = int(wothp.totalEnemy/5)
     if wothp.mainCaliberValue*5 < wothp.totalEnemy:
         wothp.mainCaliberValue += 1
-    wothp.mainCaliberPanel.setText(wothp.config.get('main_caliber_text', 'Main caliber: ') + str(wothp.mainCaliberValue))
+    wothp.mainCaliberPanel.setText(wothp.config.get('main_caliber_text', MAIN_CALIBER_TEXT) + str(wothp.mainCaliberValue))
     if wothp.avgDmg is not None:
-        wothp.avgDmgPanel.setText(wothp.config.get('avg_dmg_text', 'Avg damage: ') + str(wothp.avgDmg))
+        wothp.avgDmgPanel.setText(wothp.config.get('avg_dmg_text', AVG_DAMAGE_TEXT) + str(wothp.avgDmg))
 
 Battle.afterCreate = new_Battle_afterCreate
 
@@ -330,6 +329,6 @@ def new_cs_recreateVehicle(self, vDesc, vState, onVehicleLoadedCallback = None):
     vcDesc = vDesc.type.compactDescr
     wothp = Wothp()
     if wothp.avgDmgDict.get(vcDesc, None) is None:
-        updateDossier(vDesc.type.compactDescr)
+        updateDossier(vcDesc)
 
 ClientHangarSpace.recreateVehicle = new_cs_recreateVehicle
