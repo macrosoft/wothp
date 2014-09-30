@@ -135,7 +135,6 @@ class Wothp(object):
             x = sr[0]/2 - panel.window.width /2 + panel.x if panel.hcentered else panel.x
             y = sr[1]/2 - panel.window.height/2 + panel.y if panel.vcentered else panel.y
             panel.window.position = (x, y, 1)
-            LOG_NOTE((x, y, 1))
 
     def battleResultsReceived(self, isActiveVehicle, results):
         vcDesc = results['personal']['typeCompDescr']
@@ -228,8 +227,9 @@ class Wothp(object):
         return self.hpDict.get(vid, 0)
 
     def setVisible(self, flag):
-        self.window.visible = flag
         self.hpPanel.setVisible(flag)
+        self.mainCaliberPanel.setVisible(flag)
+        self.avgDmgPanel.setVisible(flag and wothp.avgDmg is not None)
 
 old_PlayerAvatar_setVisibleGUI = PlayerAvatar._PlayerAvatar__setVisibleGUI
 
@@ -263,6 +263,9 @@ def new_Battle_afterCreate(self):
     wothp.mainCaliberPanel.setText(wothp.mainCaliberPanel.text + str(wothp.mainCaliberValue))
     if wothp.avgDmg is not None:
         wothp.avgDmgPanel.setText(wothp.avgDmgPanel.text + str(wothp.avgDmg))
+        wothp.avgDmgPanel.setVisible(True)
+    else:
+        wothp.avgDmgPanel.setVisible(False)
 
 Battle.afterCreate = new_Battle_afterCreate
 
