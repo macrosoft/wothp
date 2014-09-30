@@ -32,6 +32,7 @@ class TextLabel(object):
     shadow = None
     window = None
     text = ''
+    color = '\cFFFFFFFF;'
     x = 0
     y = 0
     hcentered = False
@@ -40,6 +41,8 @@ class TextLabel(object):
 
     def __init__(self, config):
         self.text = config.get('text', '')
+        if config.get('color', False):
+            self.color = '\c' + config.get('color')[1:] + 'FF;'
         self.x  = config.get('x', 0)
         self.y  = config.get('y', 0)
         self.hcentered  = config.get('hcentered', False)
@@ -78,10 +81,11 @@ class TextLabel(object):
         self.shadow.visible = flag
         self.label.visible = flag
 
-    def setText(self, text, color = 'FFFFFF'):
+    def setText(self, text, color = None):
         shadowText = text.replace('\c60FF00FF;','')
         self.shadow.text = '\c000000FF;' + shadowText
-        self.label.text = '\c' + color + 'FF;' + text
+        color = '\c' + color + 'FF;' if color else self.color
+        self.label.text = color + text
         
 class Wothp(object):
     obj = None

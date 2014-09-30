@@ -18,7 +18,8 @@
         "vcentered": false,
         "background": "totalhp_bg.dds",
         "font": "default_smaller.font",
-        "text": "Основной калибр: "
+        "text": "Основной калибр: ",
+        "color": "#EEEEEE"
     },
     "avgdamage_panel": {
         "x": -150,
@@ -29,7 +30,8 @@
         "vcentered": false,
         "background": "totalhp_bg.dds",
         "font": "default_smaller.font",
-        "text": "Средний урон: "
+        "text": "Средний урон: ",
+        "color": "#EEEEEE"
     },
     "colors": [
             {"value": 0.67, "color": "#FE0E00"},
