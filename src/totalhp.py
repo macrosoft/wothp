@@ -6,11 +6,11 @@ import GUI
 import json
 import os
 import ResMgr
+from Account import Account
 from adisp import process
 from Avatar import PlayerAvatar
 from ClientArena import ClientArena
 from gui import g_guiResetters
-from gui.ClientHangarSpace import ClientHangarSpace
 from gui.Scaleform.Battle import Battle, VehicleMarkersManager
 from gui.shared import g_itemsCache
 from messenger import MessengerEntry
@@ -19,13 +19,14 @@ from Vehicle import Vehicle
 from debug_utils import *
 
 @process
-def updateDossier(vcDesc):
+def updateDossier():
     g_itemsCache.items.invalidateCache()
     yield g_itemsCache.update(6)
-    dossier = g_itemsCache.items.getVehicleDossier(vcDesc)
     wothp = Wothp()
-    avgDmg = dossier.getRandomStats().getAvgDamage()
-    wothp.avgDmgDict[vcDesc] = int(avgDmg) if avgDmg else None
+    for key in g_itemsCache.items.getVehicles().keys():
+        dossier = g_itemsCache.items.getVehicleDossier(key)
+        avgDmg = dossier.getRandomStats().getAvgDamage()
+        wothp.avgDmgDict[key] = int(avgDmg) if avgDmg else None
 
 class TextLabel(object):
     label = None
@@ -141,8 +142,7 @@ class Wothp(object):
             panel.window.position = (x, y, 1)
 
     def battleResultsReceived(self, isActiveVehicle, results):
-        vcDesc = results['personal']['typeCompDescr']
-        updateDossier(vcDesc)
+        updateDossier()
 
     def createLabels(self):
         self.hpPanel = TextLabel(self.config.get('hp_panel', {}))
@@ -335,13 +335,10 @@ def new_Vehicle_onHealthChanged(self, newHealth, attackerID, attackReasonID):
 
 Vehicle.onHealthChanged = new_Vehicle_onHealthChanged
 
-old_cs_recreateVehicle = ClientHangarSpace.recreateVehicle
+old_onBecomePlayer = Account.onBecomePlayer
 
-def new_cs_recreateVehicle(self, vDesc, vState, onVehicleLoadedCallback = None):
-    old_cs_recreateVehicle(self, vDesc, vState, onVehicleLoadedCallback)
-    vcDesc = vDesc.type.compactDescr
-    wothp = Wothp()
-    if wothp.avgDmgDict.get(vcDesc, None) is None:
-        updateDossier(vcDesc)
+def new_onBecomePlayer(self):
+    old_onBecomePlayer(self)
+    updateDossier()
 
-ClientHangarSpace.recreateVehicle = new_cs_recreateVehicle
+Account.onBecomePlayer = new_onBecomePlayer
