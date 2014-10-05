@@ -7,7 +7,8 @@
         "hcentered": true,
         "vcentered": false,
         "background": "totalhp_bg.dds",
-        "font": "default_medium.font"
+        "font": "default_medium.font",
+        "visible": true
     },
     "maincaliber_panel": {
         "x": 150,
@@ -19,7 +20,8 @@
         "background": "totalhp_bg.dds",
         "font": "default_smaller.font",
         "text": "Основной калибр: ",
-        "color": "#EEEEEE"
+        "color": "#EEEEEE",
+        "visible": true
     },
     "avgdamage_panel": {
         "x": -150,
@@ -31,7 +33,8 @@
         "background": "totalhp_bg.dds",
         "font": "default_smaller.font",
         "text": "Средний урон: ",
-        "color": "#EEEEEE"
+        "color": "#EEEEEE",
+        "visible": true
     },
     "colors": [
             {"value": 0.67, "color": "#FE0E00"},

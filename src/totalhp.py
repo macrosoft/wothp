@@ -34,6 +34,7 @@ class TextLabel(object):
     window = None
     text = ''
     color = '\cFFFFFFFF;'
+    visible = True
     x = 0
     y = 0
     hcentered = False
@@ -44,6 +45,7 @@ class TextLabel(object):
         self.text = config.get('text', '')
         if config.get('color', False):
             self.color = '\c' + config.get('color')[1:] + 'FF;'
+        self.visible = config.get('visible', True)
         self.x  = config.get('x', 0)
         self.y  = config.get('y', 0)
         self.hcentered  = config.get('hcentered', False)
@@ -66,6 +68,7 @@ class TextLabel(object):
         self.installItem(self.shadow, font)
         self.label = GUI.Text('')
         self.installItem(self.label, font)
+        self.setVisible(self.visible)
 
     def installItem(self, item, font):
         item.font = font
@@ -78,6 +81,7 @@ class TextLabel(object):
         item.colourFormatting = True
 
     def setVisible(self, flag):
+        flag = flag and self.visible
         self.window.visible = flag
         self.shadow.visible = flag
         self.label.visible = flag
@@ -255,7 +259,6 @@ def new_Battle_afterCreate(self):
     playerVehicle = player.arena.vehicles.get(player.playerVehicleID)
     cDescr = playerVehicle['vehicleType'].type.compactDescr
     wothp.avgDmg = wothp.avgDmgDict.get(cDescr, None)
-    wothp.avgDmgDict[cDescr] = None
     vehicles = BigWorld.player().arena.vehicles
     for key in vehicles.keys():
         vehicle = vehicles.get(key)
