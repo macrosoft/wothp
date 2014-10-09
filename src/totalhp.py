@@ -20,6 +20,8 @@ from debug_utils import *
 
 @process
 def updateDossier():
+    if hasattr(BigWorld.player(), 'arena'):
+        return
     g_itemsCache.items.invalidateCache()
     yield g_itemsCache.update(6)
     wothp = Wothp()
@@ -237,7 +239,7 @@ class Wothp(object):
     def setVisible(self, flag):
         self.hpPanel.setVisible(flag)
         self.mainCaliberPanel.setVisible(flag)
-        self.avgDmgPanel.setVisible(flag and wothp.avgDmg is not None)
+        self.avgDmgPanel.setVisible(flag and self.avgDmg is not None)
 
 old_PlayerAvatar_setVisibleGUI = PlayerAvatar._PlayerAvatar__setVisibleGUI
 
