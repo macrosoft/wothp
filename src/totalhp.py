@@ -318,8 +318,6 @@ def new_Vehicle_onHealthChanged(self, newHealth, attackerID, attackReasonID):
         old_Vehicle_onHealthChanged(self, newHealth, attackerID, attackReasonID)
         wothp = Wothp()
         message = wothp.config.get('team_damage', '')
-        if not len(message):
-            return None
         damage = wothp.getVehicleHealth(self.id) - max(0, newHealth)
         player = BigWorld.player()
         attacker = player.arena.vehicles.get(attackerID)
@@ -327,8 +325,9 @@ def new_Vehicle_onHealthChanged(self, newHealth, attackerID, attackReasonID):
             wothp.mainCaliberValue -= damage
             if wothp.avgDmg is not None:
                 wothp.avgDmg -= damage
-        if damage > 0 and player.team == self.publicInfo.team and \
-            attacker['team'] == self.publicInfo.team and self.id != attackerID:
+        if wothp.config.get('show_team_damage', True) and damage > 0 and \
+            player.team == self.publicInfo.team and attacker['team'] == self.publicInfo.team and \
+            self.id != attackerID:
             message = message.replace('{{damage}}', str(damage))
             message = message.replace('{{victim-name}}', self.publicInfo.name)
             message = message.replace('{{victim-vehicle}}', self.typeDescriptor.type.shortUserString)
