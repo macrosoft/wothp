@@ -138,6 +138,11 @@ class Wothp(object):
             grad.append(startColor[i]*(1.0 - val) + endColor[i]*val)
         return '%02x%02x%02x' % (grad[0], grad[1], grad[2])
 
+    @staticmethod
+    def addSeparator(val):
+        sVal = format(val, ',d')
+        return sVal.replace(',', ' ')
+
     def onChangeScreenResolution(self):
         sr = GUI.screenResolution()
         for panel in [self.hpPanel, self.mainCaliberPanel, self.avgDmgPanel]:
@@ -191,7 +196,8 @@ class Wothp(object):
             delimiter = '>'
         elif self.totalAlly < self.totalEnemy:
             delimiter = '<'
-        text = "{:>6} {:1} {:<6}".format(self.totalAlly, delimiter, self.totalEnemy)
+        text = "{:>6} {:1} {:<6}".format(self.addSeparator(self.totalAlly), delimiter, \
+            self.addSeparator(self.totalEnemy))
         ratio = float(self.totalAlly)/max(self.totalEnemy, 1)
         colors = self.config.get('colors')
         color = 'FFFFFF'
@@ -211,14 +217,14 @@ class Wothp(object):
             color = self.gradColor(colors[i - 1]['color'], colors[i]['color'], val)
         self.hpPanel.setText(text, color)
         mainCaliberText = self.mainCaliberPanel.text
-        mainCaliberText += str(self.mainCaliberValue) if self.mainCaliberValue > 0 \
-            else '\c60FF00FF;+' + str(abs(self.mainCaliberValue))
+        mainCaliberText += self.addSeparator(self.mainCaliberValue) if self.mainCaliberValue > 0 \
+            else '\c60FF00FF;+' + self.addSeparator(abs(self.mainCaliberValue))
         self.mainCaliberPanel.setText(mainCaliberText)
         if self.avgDmg is None:
             return
         avgDmgText =  self.avgDmgPanel.text
-        avgDmgText += str(self.avgDmg) if self.avgDmg > 0 \
-            else '\c60FF00FF;+' + str(abs(self.avgDmg))
+        avgDmgText += self.addSeparator(self.avgDmg) if self.avgDmg > 0 \
+            else '\c60FF00FF;+' + self.addSeparator(abs(self.avgDmg))
         self.avgDmgPanel.setText(avgDmgText)
 
     def insertVehicle(self, vid, health):
@@ -269,9 +275,9 @@ def new_Battle_afterCreate(self):
     wothp.mainCaliberValue = int(wothp.totalEnemy/5)
     if wothp.mainCaliberValue*5 < wothp.totalEnemy:
         wothp.mainCaliberValue += 1
-    wothp.mainCaliberPanel.setText(wothp.mainCaliberPanel.text + str(wothp.mainCaliberValue))
+    wothp.mainCaliberPanel.setText(wothp.mainCaliberPanel.text + wothp.addSeparator(wothp.mainCaliberValue))
     if wothp.avgDmg is not None:
-        wothp.avgDmgPanel.setText(wothp.avgDmgPanel.text + str(wothp.avgDmg))
+        wothp.avgDmgPanel.setText(wothp.avgDmgPanel.text + wothp.addSeparator(wothp.avgDmg))
         wothp.avgDmgPanel.setVisible(True)
     else:
         wothp.avgDmgPanel.setVisible(False)
