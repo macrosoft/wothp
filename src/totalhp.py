@@ -270,7 +270,8 @@ def new_Battle_afterCreate(self):
     vehicles = BigWorld.player().arena.vehicles
     for key in vehicles.keys():
         vehicle = vehicles.get(key)
-        wothp.insertVehicle(key, vehicle['vehicleType'].maxHealth)
+        if vehicle['vehicleType']:
+            wothp.insertVehicle(key, vehicle['vehicleType'].maxHealth)
     wothp.update()
     wothp.mainCaliberValue = int(wothp.totalEnemy/5)
     if wothp.mainCaliberValue*5 < wothp.totalEnemy:
