@@ -196,8 +196,7 @@ class Wothp(object):
             delimiter = '>'
         elif self.totalAlly < self.totalEnemy:
             delimiter = '<'
-        text = "{:>6} {:1} {:<6}".format(self.addSeparator(self.totalAlly), delimiter, \
-            self.addSeparator(self.totalEnemy))
+        text = "{:>6} {:1} {:<6}".format(self.totalAlly, delimiter, self.totalEnemy)
         ratio = float(self.totalAlly)/max(self.totalEnemy, 1)
         colors = self.config.get('colors')
         color = 'FFFFFF'
