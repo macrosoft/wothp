@@ -272,7 +272,7 @@ def new_Battle_afterCreate(self):
         if vehicle['vehicleType']:
             wothp.insertVehicle(key, vehicle['vehicleType'].maxHealth)
     wothp.update()
-    wothp.mainCaliberValue = int(wothp.totalEnemy/5)
+    wothp.mainCaliberValue = max(1000, int(wothp.totalEnemy/5))
     if wothp.mainCaliberValue*5 < wothp.totalEnemy:
         wothp.mainCaliberValue += 1
     wothp.mainCaliberPanel.setText(wothp.mainCaliberPanel.text + wothp.addSeparator(wothp.mainCaliberValue))
