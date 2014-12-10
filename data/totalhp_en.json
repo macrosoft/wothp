@@ -42,5 +42,6 @@
             {"value": 1.05, "color": "#FFFFFF"},
             {"value": 1.5, "color": "#60FF00"}
     ],
-    "team_damage": "<font color='#00EAFF'>{{attacker-name}} ({{attacker-vehicle}})</font> injured ally {{victim-name}} ({{victim-vehicle}}) for <font color='#FFDD33'>{{damage}}</font>!"
+    "team_damage": "<font color='#00EAFF'>{{attacker-name}} ({{attacker-vehicle}})</font> injured ally {{victim-name}} ({{victim-vehicle}}) for <font color='#FFDD33'>{{damage}}</font>!",
+    "show_team_damage": true
 }
