@@ -11,7 +11,8 @@ from adisp import process
 from Avatar import PlayerAvatar
 from ClientArena import ClientArena
 from gui import g_guiResetters
-from gui.Scaleform.Battle import Battle, VehicleMarkersManager
+from gui.Scaleform.Battle import Battle
+from gui.Scaleform.daapi.view.battle.markers import MarkersManager
 from gui.shared import g_itemsCache
 from messenger import MessengerEntry
 from PlayerEvents import g_playerEvents
@@ -303,7 +304,7 @@ def new_ClientArena__onVehicleKilled(self, argStr):
 
 ClientArena._ClientArena__onVehicleKilled = new_ClientArena__onVehicleKilled
 
-old_createMarker = VehicleMarkersManager.createMarker
+old_createMarker = MarkersManager.createMarker
 
 def new_createMarker(self, vProxy):
     result = old_createMarker(self, vProxy)
@@ -311,7 +312,7 @@ def new_createMarker(self, vProxy):
     wothp.updateVehicle(vProxy.id, vProxy.health)
     return  result
 
-VehicleMarkersManager.createMarker = new_createMarker
+MarkersManager.createMarker = new_createMarker
 
 old_Vehicle_onHealthChanged = Vehicle.onHealthChanged
 
