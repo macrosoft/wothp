@@ -298,21 +298,21 @@ old_ClientArena_onVehicleKilled = ClientArena._ClientArena__onVehicleKilled
 
 def new_ClientArena__onVehicleKilled(self, argStr):
     old_ClientArena_onVehicleKilled(self, argStr)
-    victimID, killerID, reason = cPickle.loads(argStr)
+    victimID, killerID, equipmentID, reason = cPickle.loads(argStr)
     wothp = Wothp()
     wothp.killVehicle(victimID)
 
 ClientArena._ClientArena__onVehicleKilled = new_ClientArena__onVehicleKilled
 
-old_createMarker = MarkersManager.createMarker
+old_addVehicleMarker = MarkersManager.addVehicleMarker
 
-def new_createMarker(self, vProxy):
-    result = old_createMarker(self, vProxy)
+def new_addVehicleMarker(self, vProxy, vInfo, guiProps):
+    result = old_addVehicleMarker(self, vProxy, vInfo, guiProps)
     wothp = Wothp()
     wothp.updateVehicle(vProxy.id, vProxy.health)
     return  result
 
-MarkersManager.createMarker = new_createMarker
+MarkersManager.addVehicleMarker = new_addVehicleMarker
 
 old_Vehicle_onHealthChanged = Vehicle.onHealthChanged
 
