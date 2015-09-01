@@ -1,6 +1,6 @@
 import py_compile, zipfile, os
 
-WOTVersion = "0.9.10 Common Test"
+WOTVersion = "0.9.10"
 language = 'ru' # 'ru' or 'en'
 
 if os.path.exists("totalhp.zip"):
