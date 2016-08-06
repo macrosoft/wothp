@@ -11,8 +11,7 @@ from adisp import process
 from Avatar import PlayerAvatar
 from ClientArena import ClientArena
 from gui import g_guiResetters
-from gui.Scaleform.Battle import Battle
-from gui.Scaleform.daapi.view.battle.markers import MarkersManager
+from gui.Scaleform.daapi.view.battle.shared.markers2d.plugins import VehicleMarkerPlugin
 from gui.shared import g_itemsCache
 from messenger import MessengerEntry
 from PlayerEvents import g_playerEvents
@@ -247,19 +246,19 @@ class Wothp(object):
         self.mainCaliberPanel.setVisible(flag)
         self.avgDmgPanel.setVisible(flag and self.avgDmg is not None)
 
-old_PlayerAvatar_setVisibleGUI = PlayerAvatar._PlayerAvatar__setVisibleGUI
+old_PlayerAvatar_setComponentsVisibility = PlayerAvatar.setComponentsVisibility
 
-def new_PlayerAvatar_setVisibleGUI(self, bool):
-    old_PlayerAvatar_setVisibleGUI(self, bool)
+def new_PlayerAvatar_setComponentsVisibility(self, bool):
+    old_PlayerAvatar_setComponentsVisibility(self, bool)
     wothp = Wothp()
     wothp.setVisible(bool)
 
-PlayerAvatar._PlayerAvatar__setVisibleGUI = new_PlayerAvatar_setVisibleGUI
+PlayerAvatar.setComponentsVisibility = new_PlayerAvatar_setComponentsVisibility
 
-old_Battle_afterCreate = Battle.afterCreate
+old_PlayerAvatar__startGUI = PlayerAvatar._PlayerAvatar__startGUI
 
-def new_Battle_afterCreate(self):
-    old_Battle_afterCreate(self)
+def new_PlayerAvatar__startGUI(self):
+    old_PlayerAvatar__startGUI(self)
     wothp = Wothp()
     wothp.reset()
     wothp.createLabels()
@@ -283,16 +282,16 @@ def new_Battle_afterCreate(self):
     else:
         wothp.avgDmgPanel.setVisible(False)
 
-Battle.afterCreate = new_Battle_afterCreate
+PlayerAvatar._PlayerAvatar__startGUI = new_PlayerAvatar__startGUI
 
-old_Battle_beforeDelete = Battle.beforeDelete
+old_PlayerAvatar__destroyGUI = PlayerAvatar._PlayerAvatar__destroyGUI
 
-def new_beforeDelete(self):
-    old_Battle_beforeDelete(self)
+def new_PlayerAvatar__destroyGUI(self):
+    old_PlayerAvatar__destroyGUI(self)
     wothp = Wothp()
     wothp.deleteLabels()
 
-Battle.beforeDelete = new_beforeDelete
+PlayerAvatar._PlayerAvatar__destroyGUI = new_PlayerAvatar__destroyGUI
 
 old_ClientArena_onVehicleKilled = ClientArena._ClientArena__onVehicleKilled
 
@@ -304,15 +303,14 @@ def new_ClientArena__onVehicleKilled(self, argStr):
 
 ClientArena._ClientArena__onVehicleKilled = new_ClientArena__onVehicleKilled
 
-old_addVehicleMarker = MarkersManager.addVehicleMarker
+old_VehicleMarkerPlugin__addOrUpdateVehicleMarker = VehicleMarkerPlugin._VehicleMarkerPlugin__addOrUpdateVehicleMarker
 
-def new_addVehicleMarker(self, vProxy, vInfo, guiProps):
-    result = old_addVehicleMarker(self, vProxy, vInfo, guiProps)
+def new_VehicleMarkerPlugin__addOrUpdateVehicleMarker(self, vProxy, vInfo, guiProps, active = True):
+    old_VehicleMarkerPlugin__addOrUpdateVehicleMarker(self, vProxy, vInfo, guiProps, active)
     wothp = Wothp()
     wothp.updateVehicle(vProxy.id, vProxy.health)
-    return  result
 
-MarkersManager.addVehicleMarker = new_addVehicleMarker
+VehicleMarkerPlugin._VehicleMarkerPlugin__addOrUpdateVehicleMarker = new_VehicleMarkerPlugin__addOrUpdateVehicleMarker
 
 old_Vehicle_onHealthChanged = Vehicle.onHealthChanged
 
